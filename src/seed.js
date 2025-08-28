@@ -152,16 +152,25 @@ const seedData = {
         },
       ],
       instructions: [
+<<<<<<< HEAD
         "Season salmon with herbs and lemon",
         "Heat olive oil in a pan",
         "Cook salmon until flaky",
         "Cook quinoa as a side",
         "Serve with fresh herbs and lemon wedges",
+=======
+        "Season salmon with salt and pepper",
+        "Heat olive oil in a pan over medium heat",
+        "Cook salmon for 4-5 minutes per side",
+        "Squeeze lemon juice and add fresh herbs",
+        "Serve with cooked quinoa",
+>>>>>>> 4d79677cd42d0fba24c91ecc4dc32623f1ca4c0c
       ],
       nutrition: {
         calories: 580,
         protein: "45g",
         fat: "32g",
+<<<<<<< HEAD
         carbs: "28g",
         fiber: "4g",
       },
@@ -170,6 +179,199 @@ const seedData = {
       rating: 4.6,
       reviews: 89,
     },
+=======
+        carbs: "25g",
+        fiber: "3g",
+      },
+      dietCompatible: ["keto", "paleo", "mediterranean"],
+      author: "Chef Marco",
+      rating: 4.9,
+      reviews: 89,
+    },
+    {
+      name: "Greek Yogurt Parfait",
+      description:
+        "A healthy and delicious breakfast option with fresh fruits and nuts.",
+      difficulty: "Easy",
+      cookingTime: "10 minutes",
+      servings: 1,
+      calories: 320,
+      image: "🥛",
+      tags: ["Breakfast", "High Protein", "Quick"],
+      ingredients: [
+        {
+          name: "Greek Yogurt",
+          productName: "Greek Yogurt",
+          quantity: "1 cup",
+          inPantry: false,
+        },
+        {
+          name: "Almonds",
+          productName: "Almonds",
+          quantity: "1/4 cup",
+          inPantry: false,
+        },
+        {
+          name: "Honey",
+          productName: "Honey",
+          quantity: "1 tbsp",
+          inPantry: false,
+        },
+        {
+          name: "Fresh berries",
+          productName: "Cherry Tomatoes",
+          quantity: "1/2 cup",
+          inPantry: false,
+        },
+      ],
+      instructions: [
+        "Layer Greek yogurt in a glass",
+        "Add fresh berries on top",
+        "Sprinkle crushed almonds",
+        "Drizzle with honey",
+        "Serve immediately",
+      ],
+      nutrition: {
+        calories: 320,
+        protein: "25g",
+        fat: "18g",
+        carbs: "22g",
+        fiber: "4g",
+      },
+      dietCompatible: ["vegetarian", "mediterranean"],
+      author: "Chef Maria",
+      rating: 4.7,
+      reviews: 156,
+    },
+    {
+      name: "Avocado Toast",
+      description:
+        "A simple yet nutritious breakfast with creamy avocado and fresh toppings.",
+      difficulty: "Easy",
+      cookingTime: "15 minutes",
+      servings: 2,
+      calories: 280,
+      image: "🥑",
+      tags: ["Breakfast", "Vegetarian", "Quick"],
+      ingredients: [
+        {
+          name: "Avocado",
+          productName: "Avocado",
+          quantity: "1 ripe",
+          inPantry: false,
+        },
+        {
+          name: "Bread",
+          productName: "Bread",
+          quantity: "4 slices",
+          inPantry: false,
+        },
+        {
+          name: "Lemon",
+          productName: "Lemon",
+          quantity: "1/2",
+          inPantry: false,
+        },
+        {
+          name: "Olive oil",
+          productName: "Olive oil",
+          quantity: "1 tbsp",
+          inPantry: false,
+        },
+        {
+          name: "Salt and pepper",
+          productName: "Salt",
+          quantity: "to taste",
+          inPantry: false,
+        },
+      ],
+      instructions: [
+        "Toast bread until golden brown",
+        "Mash avocado in a bowl",
+        "Add lemon juice, salt, and pepper",
+        "Spread mixture on toast",
+        "Drizzle with olive oil and serve",
+      ],
+      nutrition: {
+        calories: 280,
+        protein: "8g",
+        fat: "22g",
+        carbs: "18g",
+        fiber: "6g",
+      },
+      dietCompatible: ["vegan", "vegetarian"],
+      author: "Chef Alex",
+      rating: 4.6,
+      reviews: 203,
+    },
+    {
+      name: "Chickpea Salad",
+      description: "A protein-rich salad perfect for lunch or light dinner.",
+      difficulty: "Easy",
+      cookingTime: "20 minutes",
+      servings: 4,
+      calories: 180,
+      image: "🫘",
+      tags: ["Vegan", "High Protein", "Salad"],
+      ingredients: [
+        {
+          name: "Chickpeas",
+          productName: "Chickpeas",
+          quantity: "2 cups",
+          inPantry: false,
+        },
+        {
+          name: "Cucumber",
+          productName: "Cucumber",
+          quantity: "1 medium",
+          inPantry: false,
+        },
+        {
+          name: "Tomato",
+          productName: "Tomato",
+          quantity: "2 medium",
+          inPantry: false,
+        },
+        {
+          name: "Onion",
+          productName: "Onion",
+          quantity: "1 small",
+          inPantry: false,
+        },
+        {
+          name: "Olive oil",
+          productName: "Olive oil",
+          quantity: "2 tbsp",
+          inPantry: false,
+        },
+        {
+          name: "Lemon",
+          productName: "Lemon",
+          quantity: "1",
+          inPantry: false,
+        },
+      ],
+      instructions: [
+        "Drain and rinse chickpeas",
+        "Chop cucumber, tomatoes, and onion",
+        "Mix all vegetables in a bowl",
+        "Add olive oil and lemon juice",
+        "Season with salt and pepper",
+        "Chill for 30 minutes before serving",
+      ],
+      nutrition: {
+        calories: 180,
+        protein: "12g",
+        fat: "8g",
+        carbs: "22g",
+        fiber: "8g",
+      },
+      dietCompatible: ["vegan", "vegetarian", "gluten-free"],
+      author: "Chef Lisa",
+      rating: 4.5,
+      reviews: 98,
+    },
+>>>>>>> 4d79677cd42d0fba24c91ecc4dc32623f1ca4c0c
   ],
 
   dietPlans: [
@@ -385,6 +587,64 @@ const seedData = {
       supplier: "Fresh Valley Farms",
     },
     {
+<<<<<<< HEAD
+=======
+      name: "Bread",
+      description: "Fresh whole grain bread, rich in fiber",
+      price: 45,
+      originalPrice: 55,
+      category: "Bakery",
+      dietCompatible: ["vegetarian", "mediterranean"],
+      image: "🍞",
+      inStock: true,
+      stockQuantity: 40,
+      unit: "1 loaf",
+      rating: 4.5,
+      reviews: 89,
+      tags: ["Fresh", "Whole Grain", "Local"],
+      supplier: "Fresh Valley Farms",
+    },
+    {
+      name: "Honey",
+      description: "Pure natural honey, perfect for sweetening",
+      price: 120,
+      originalPrice: 150,
+      category: "Sweeteners",
+      dietCompatible: ["vegetarian"],
+      image: "🍯",
+      inStock: true,
+      stockQuantity: 30,
+      unit: "500g",
+      rating: 4.7,
+      reviews: 67,
+      tags: ["Natural", "Pure", "Local"],
+      supplier: "Fresh Valley Farms",
+    },
+    {
+      name: "Salt",
+      description: "Premium sea salt for cooking and seasoning",
+      price: 25,
+      originalPrice: 30,
+      category: "Seasonings",
+      dietCompatible: [
+        "vegan",
+        "vegetarian",
+        "keto",
+        "paleo",
+        "mediterranean",
+        "dash",
+      ],
+      image: "🧂",
+      inStock: true,
+      stockQuantity: 100,
+      unit: "200g",
+      rating: 4.6,
+      reviews: 45,
+      tags: ["Premium", "Sea Salt", "Local"],
+      supplier: "Fresh Valley Farms",
+    },
+    {
+>>>>>>> 4d79677cd42d0fba24c91ecc4dc32623f1ca4c0c
       name: "Salmon fillet",
       description: "Wild-caught Atlantic salmon, rich in omega-3 fatty acids",
       price: 400,
@@ -539,6 +799,7 @@ const seedData = {
       supplier: "Fresh Valley Farms",
     },
     {
+<<<<<<< HEAD
       name: "Organic Quinoa",
       description: "Premium organic quinoa rich in protein and fiber",
       price: 299,
@@ -555,6 +816,8 @@ const seedData = {
       tags: ["Organic", "Premium", "Local"],
     },
     {
+=======
+>>>>>>> 4d79677cd42d0fba24c91ecc4dc32623f1ca4c0c
       name: "Greek Yogurt",
       description: "Creamy Greek yogurt high in protein and probiotics",
       price: 149,
@@ -639,6 +902,7 @@ const seedData = {
       tags: ["Organic", "Fresh", "Local"],
       supplier: "Fresh Valley Farms",
     },
+<<<<<<< HEAD
     {
       name: "Salt",
       description: "Fine sea salt for cooking and seasoning",
@@ -694,6 +958,8 @@ const seedData = {
       tags: ["Natural", "Pure", "Local"],
       supplier: "Honey Farm",
     },
+=======
+>>>>>>> 4d79677cd42d0fba24c91ecc4dc32623f1ca4c0c
   ],
 
   partnerships: [
