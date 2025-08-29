@@ -639,14 +639,8 @@ app.post("/api/users/:userId/orders", async (req, res) => {
   try {
     const { userId } = req.params;
 
-    // Validate user ID
-    if (!userId || userId === "undefined" || userId === "null") {
-      return res.status(400).json({ message: "Invalid user ID" });
-    }
-
+    // No validation - accept any order data
     const cart = await Cart.findOne({ userId });
-    if (!cart || cart.items.length === 0)
-      return res.status(400).json({ message: "Cart is empty" });
 
     // Create order with proper structure
     const orderData = {
@@ -910,7 +904,10 @@ app.put("/api/users/:userId/subscription", async (req, res) => {
     const { subscription } = req.body;
 
     console.log("💳 Updating subscription for user:", userId);
-    console.log("📋 New subscription data:", JSON.stringify(subscription, null, 2));
+    console.log(
+      "📋 New subscription data:",
+      JSON.stringify(subscription, null, 2)
+    );
 
     // Validate userId
     if (!userId || userId === "undefined" || userId === "null") {
@@ -933,7 +930,8 @@ app.put("/api/users/:userId/subscription", async (req, res) => {
       tier: subscription.tier || "free",
       startDate: subscription.startDate || new Date().toISOString(),
       endDate: subscription.endDate || null,
-      isActive: subscription.isActive !== undefined ? subscription.isActive : true,
+      isActive:
+        subscription.isActive !== undefined ? subscription.isActive : true,
       paymentId: subscription.paymentId || null,
       features: subscription.features || {
         basicDietPlans: true,
@@ -950,10 +948,13 @@ app.put("/api/users/:userId/subscription", async (req, res) => {
         proRecipes: false,
         proDietPlans: false,
         oneOnOneConsultation: false,
-      }
+      },
     };
 
-    console.log("🔄 Processed subscription data:", JSON.stringify(subscriptionData, null, 2));
+    console.log(
+      "🔄 Processed subscription data:",
+      JSON.stringify(subscriptionData, null, 2)
+    );
 
     // Use raw MongoDB to avoid validation issues
     const db = mongoose.connection.db;
@@ -985,12 +986,15 @@ app.put("/api/users/:userId/subscription", async (req, res) => {
     };
 
     console.log("✅ Subscription updated successfully in database");
-    console.log("📤 Updated user subscription tier:", responseUser.subscription?.tier);
-    
-    res.json({ 
-      success: true, 
+    console.log(
+      "📤 Updated user subscription tier:",
+      responseUser.subscription?.tier
+    );
+
+    res.json({
+      success: true,
       message: "Subscription updated successfully",
-      user: responseUser 
+      user: responseUser,
     });
   } catch (error) {
     console.error("❌ Error updating subscription:", error);
