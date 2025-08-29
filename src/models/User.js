@@ -12,6 +12,9 @@ const PreferencesSchema = new mongoose.Schema(
     activityLevel: String,
     cookingExperience: String,
     monthlyBudget: Number,
+    activeDietPlan: { type: mongoose.Schema.Types.ObjectId, ref: "DietPlan" },
+    dietPlanStartDate: Date,
+    dietPlanGoals: mongoose.Schema.Types.Mixed,
   },
   { _id: false }
 );

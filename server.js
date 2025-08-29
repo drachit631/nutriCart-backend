@@ -687,53 +687,6 @@ app.post("/api/users/:userId/orders", async (req, res) => {
 });
 
 // Update user profile
-app.put("/api/auth/profile", async (req, res) => {
-  try {
-    const authToken = req.headers.authorization;
-    if (!authToken) {
-      return res
-        .status(401)
-        .json({ message: "No authorization token provided" });
-    }
-
-    // Extract user ID from token (simple extraction for demo)
-    const tokenParts = authToken.replace("Bearer ", "").split("-");
-    if (tokenParts.length < 2) {
-      return res.status(401).json({ message: "Invalid token format" });
-    }
-
-    const userId = tokenParts[1]; // Extract user ID from token
-    const profileData = req.body;
-
-    console.log("Updating profile for user:", userId);
-    console.log("Profile data:", profileData);
-
-    // Use raw MongoDB to avoid validation issues
-    const db = mongoose.connection.db;
-    const usersCollection = db.collection("users");
-
-    const result = await usersCollection.updateOne(
-      { _id: new mongoose.Types.ObjectId(userId) },
-      { $set: profileData }
-    );
-
-    if (result.matchedCount === 0) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // Get updated user data
-    const updatedUser = await usersCollection.findOne({
-      _id: new mongoose.Types.ObjectId(userId),
-    });
-    const { password, _id, ...safeUser } = updatedUser;
-
-    console.log("✅ Profile updated successfully in database");
-    res.json({ ...safeUser, id: updatedUser._id });
-  } catch (error) {
-    console.error("❌ Error updating profile:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-});
 
 // Get user by ID
 app.get("/api/users/:userId", async (req, res) => {
@@ -773,15 +726,92 @@ app.put("/api/auth/profile", async (req, res) => {
     }
 
     const tokenParts = authToken.replace("Bearer ", "").split("-");
-    if (tokenParts.length < 2) {
+    console.log("🔍 Token parts:", tokenParts);
+
+    if (tokenParts.length < 4) {
+      console.log(
+        "❌ Invalid token format - expected 4 parts, got:",
+        tokenParts.length
+      );
       return res.status(401).json({ message: "Invalid token format" });
     }
 
-    const userId = tokenParts[1];
+    const userId = tokenParts[2]; // Extract user ID from mock-jwt-{userId}-{timestamp}
+    console.log("👤 Extracted userId:", userId);
     const profileData = req.body;
 
-    console.log("Updating profile for user:", userId);
-    console.log("Profile data:", profileData);
+    console.log("🔄 Updating profile for user:", userId);
+    console.log(
+      "📋 Profile data received:",
+      JSON.stringify(profileData, null, 2)
+    );
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      console.error("Invalid ObjectId format:", userId);
+      return res.status(400).json({ message: "Invalid user ID format" });
+    }
+
+    // Map frontend data to User model structure
+    const mappedData = {};
+
+    // Basic user fields
+    if (profileData.firstName) mappedData.firstName = profileData.firstName;
+    if (profileData.lastName) mappedData.lastName = profileData.lastName;
+    if (profileData.email) mappedData.email = profileData.email;
+    if (profileData.profileComplete !== undefined)
+      mappedData.profileComplete = profileData.profileComplete;
+
+    // Preferences mapping - use $set with dot notation to update specific fields
+    if (profileData.preferences) {
+      // Handle each preference field with dot notation for partial updates
+      const prefs = profileData.preferences;
+
+      if (prefs.dietaryRestrictions !== undefined)
+        mappedData["preferences.dietaryRestrictions"] =
+          prefs.dietaryRestrictions;
+      if (prefs.allergies !== undefined)
+        mappedData["preferences.allergies"] = prefs.allergies;
+      if (prefs.budget !== undefined)
+        mappedData["preferences.budget"] = prefs.budget;
+      if (prefs.healthGoals !== undefined)
+        mappedData["preferences.healthGoals"] = prefs.healthGoals;
+      if (prefs.preferredDiets !== undefined)
+        mappedData["preferences.preferredDiets"] = prefs.preferredDiets;
+      if (prefs.weight !== undefined)
+        mappedData["preferences.weight"] = prefs.weight;
+      if (prefs.height !== undefined)
+        mappedData["preferences.height"] = prefs.height;
+      if (prefs.activityLevel !== undefined)
+        mappedData["preferences.activityLevel"] = prefs.activityLevel;
+      if (prefs.cookingExperience !== undefined)
+        mappedData["preferences.cookingExperience"] = prefs.cookingExperience;
+      if (prefs.monthlyBudget !== undefined)
+        mappedData["preferences.monthlyBudget"] = prefs.monthlyBudget;
+
+      // Handle activeDietPlan (convert to ObjectId if provided)
+      if (prefs.activeDietPlan !== undefined) {
+        if (
+          prefs.activeDietPlan &&
+          mongoose.Types.ObjectId.isValid(prefs.activeDietPlan)
+        ) {
+          mappedData["preferences.activeDietPlan"] =
+            new mongoose.Types.ObjectId(prefs.activeDietPlan);
+        } else {
+          mappedData["preferences.activeDietPlan"] = prefs.activeDietPlan;
+        }
+      }
+
+      if (prefs.dietPlanStartDate !== undefined) {
+        mappedData["preferences.dietPlanStartDate"] = prefs.dietPlanStartDate
+          ? new Date(prefs.dietPlanStartDate)
+          : null;
+      }
+      if (prefs.dietPlanGoals !== undefined)
+        mappedData["preferences.dietPlanGoals"] = prefs.dietPlanGoals;
+    }
+
+    console.log("Mapped data for database:", mappedData);
 
     // Use raw MongoDB to avoid validation issues
     const db = mongoose.connection.db;
@@ -789,20 +819,34 @@ app.put("/api/auth/profile", async (req, res) => {
 
     const result = await usersCollection.updateOne(
       { _id: new mongoose.Types.ObjectId(userId) },
-      { $set: profileData }
+      { $set: mappedData }
     );
 
     if (result.matchedCount === 0) {
+      console.error("User not found with ID:", userId);
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Get updated user data
     const updatedUser = await usersCollection.findOne({
       _id: new mongoose.Types.ObjectId(userId),
     });
-    const { password, _id, ...safeUser } = updatedUser;
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found after update" });
+    }
+
+    const { password, ...safeUser } = updatedUser;
+
+    // Ensure the response includes the user ID
+    const responseUser = {
+      ...safeUser,
+      id: updatedUser._id.toString(),
+    };
 
     console.log("✅ Profile updated successfully in database");
-    res.json({ ...safeUser, id: updatedUser._id });
+    console.log("📤 Returning updated user data with ID:", responseUser.id);
+    res.json(responseUser);
   } catch (error) {
     console.error("❌ Error updating profile:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -859,13 +903,57 @@ app.post("/api/diet-plans/:planId/start", async (req, res) => {
 });
 
 // Update user subscription
+// Update user subscription
 app.put("/api/users/:userId/subscription", async (req, res) => {
   try {
     const { userId } = req.params;
     const { subscription } = req.body;
 
-    console.log("Updating subscription for user:", userId);
-    console.log("New subscription data:", subscription);
+    console.log("💳 Updating subscription for user:", userId);
+    console.log("📋 New subscription data:", JSON.stringify(subscription, null, 2));
+
+    // Validate userId
+    if (!userId || userId === "undefined" || userId === "null") {
+      return res.status(400).json({ message: "Invalid user ID" });
+    }
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      console.error("❌ Invalid ObjectId format:", userId);
+      return res.status(400).json({ message: "Invalid user ID format" });
+    }
+
+    // Validate subscription data
+    if (!subscription) {
+      return res.status(400).json({ message: "Subscription data is required" });
+    }
+
+    // Ensure subscription has required fields with defaults
+    const subscriptionData = {
+      tier: subscription.tier || "free",
+      startDate: subscription.startDate || new Date().toISOString(),
+      endDate: subscription.endDate || null,
+      isActive: subscription.isActive !== undefined ? subscription.isActive : true,
+      paymentId: subscription.paymentId || null,
+      features: subscription.features || {
+        basicDietPlans: true,
+        basicRecipes: true,
+        progressTracking: false,
+        premiumDietPlans: false,
+        prioritySupport: false,
+        exclusiveRecipes: false,
+        nutritionalAnalysis: false,
+        advancedAnalytics: false,
+        restaurantRecommendations: false,
+        prioritySupport24x7: false,
+        exclusiveWorkshops: false,
+        proRecipes: false,
+        proDietPlans: false,
+        oneOnOneConsultation: false,
+      }
+    };
+
+    console.log("🔄 Processed subscription data:", JSON.stringify(subscriptionData, null, 2));
 
     // Use raw MongoDB to avoid validation issues
     const db = mongoose.connection.db;
@@ -873,15 +961,37 @@ app.put("/api/users/:userId/subscription", async (req, res) => {
 
     const result = await usersCollection.updateOne(
       { _id: new mongoose.Types.ObjectId(userId) },
-      { $set: { subscription: subscription } }
+      { $set: { subscription: subscriptionData } }
     );
 
     if (result.matchedCount === 0) {
+      console.error("❌ User not found with ID:", userId);
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Get updated user data to return
+    const updatedUser = await usersCollection.findOne({
+      _id: new mongoose.Types.ObjectId(userId),
+    });
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found after update" });
+    }
+
+    const { password, ...safeUser } = updatedUser;
+    const responseUser = {
+      ...safeUser,
+      id: updatedUser._id.toString(),
+    };
+
     console.log("✅ Subscription updated successfully in database");
-    res.json({ success: true, message: "Subscription updated successfully" });
+    console.log("📤 Updated user subscription tier:", responseUser.subscription?.tier);
+    
+    res.json({ 
+      success: true, 
+      message: "Subscription updated successfully",
+      user: responseUser 
+    });
   } catch (error) {
     console.error("❌ Error updating subscription:", error);
     res.status(500).json({ message: "Internal server error" });
