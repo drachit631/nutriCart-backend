@@ -1,52 +1,13 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import User from "./models/User.js";
 import Product from "./models/Product.js";
 import DietPlan from "./models/DietPlan.js";
 import Recipe from "./models/Recipe.js";
 import Partnership from "./models/Partnership.js";
-import UserProgress from "./models/UserProgress.js";
 
 dotenv.config();
 
 const seedData = {
-  users: [
-    {
-      firstName: "Demo",
-      lastName: "User",
-      email: "demo@nutricart.com",
-      password: "demo123",
-      profileComplete: true,
-      createdAt: "2024-01-15T10:00:00Z",
-      lastLogin: "2024-01-20T15:30:00Z",
-      subscription: "premium",
-      preferences: {
-        dietaryRestrictions: ["Lactose Intolerant"],
-        allergies: ["Peanuts"],
-        budget: 8000,
-        healthGoals: ["Weight Loss", "Muscle Gain"],
-        preferredDiets: ["Keto", "Mediterranean"],
-      },
-    },
-    {
-      firstName: "Sarah",
-      lastName: "Johnson",
-      email: "sarah@example.com",
-      password: "password123",
-      profileComplete: true,
-      createdAt: "2024-01-10T09:00:00Z",
-      lastLogin: "2024-01-19T14:20:00Z",
-      subscription: "free",
-      preferences: {
-        dietaryRestrictions: ["Vegetarian"],
-        allergies: [],
-        budget: 5000,
-        healthGoals: ["Heart Health"],
-        preferredDiets: ["Mediterranean", "DASH"],
-      },
-    },
-  ],
-
   recipes: [
     {
       name: "Quinoa Buddha Bowl",
@@ -108,6 +69,7 @@ const seedData = {
       author: "Chef Sarah",
       rating: 4.8,
       reviews: 127,
+      subscriptionTier: "free",
     },
     {
       name: "Mediterranean Salmon",
@@ -169,13 +131,373 @@ const seedData = {
       author: "Chef Maria",
       rating: 4.6,
       reviews: 89,
+      subscriptionTier: "free",
+    },
+    // FREE TIER RECIPES
+    {
+      name: "Overnight Oats with Berries",
+      description:
+        "Healthy and delicious overnight oats perfect for busy mornings",
+      difficulty: "Easy",
+      cookingTime: "5 minutes + overnight",
+      servings: 1,
+      calories: 320,
+      image: "🥣",
+      tags: ["Vegan", "High Fiber", "Budget Friendly"],
+      ingredients: [
+        {
+          name: "Oats",
+          productName: "Oats",
+          quantity: "1/2 cup",
+          inPantry: false,
+        },
+        {
+          name: "Almond milk",
+          productName: "Almond milk",
+          quantity: "1/2 cup",
+          inPantry: false,
+        },
+        {
+          name: "Chia seeds",
+          productName: "Chia seeds",
+          quantity: "1 tbsp",
+          inPantry: false,
+        },
+        {
+          name: "Honey",
+          productName: "Honey",
+          quantity: "1 tsp",
+          inPantry: false,
+        },
+        {
+          name: "Mixed berries",
+          productName: "Mixed berries",
+          quantity: "1/4 cup",
+          inPantry: false,
+        },
+      ],
+      instructions: [
+        "Mix oats, almond milk, and chia seeds in a jar",
+        "Add honey and stir well",
+        "Refrigerate overnight",
+        "Top with fresh berries before serving",
+      ],
+      nutrition: {
+        calories: 320,
+        protein: "8g",
+        fat: "12g",
+        carbs: "45g",
+        fiber: "8g",
+      },
+      dietCompatible: ["vegan", "vegetarian", "gluten-free"],
+      author: "Chef Sarah",
+      rating: 4.5,
+      reviews: 89,
+      subscriptionTier: "free",
+    },
+    {
+      name: "Greek Yogurt Parfait",
+      description: "Protein-rich parfait with fresh fruits and granola",
+      difficulty: "Easy",
+      cookingTime: "10 minutes",
+      servings: 1,
+      calories: 280,
+      image: "🥛",
+      tags: ["High Protein", "Quick", "Healthy"],
+      ingredients: [
+        {
+          name: "Greek yogurt",
+          productName: "Greek yogurt",
+          quantity: "1 cup",
+          inPantry: false,
+        },
+        {
+          name: "Honey",
+          productName: "Honey",
+          quantity: "1 tbsp",
+          inPantry: false,
+        },
+        {
+          name: "Granola",
+          productName: "Granola",
+          quantity: "1/4 cup",
+          inPantry: false,
+        },
+        {
+          name: "Mixed berries",
+          productName: "Mixed berries",
+          quantity: "1/2 cup",
+          inPantry: false,
+        },
+      ],
+      instructions: [
+        "Layer Greek yogurt in a glass",
+        "Drizzle with honey",
+        "Add granola layer",
+        "Top with fresh berries",
+      ],
+      nutrition: {
+        calories: 280,
+        protein: "20g",
+        fat: "8g",
+        carbs: "35g",
+        fiber: "4g",
+      },
+      dietCompatible: ["vegetarian"],
+      author: "Chef Maria",
+      rating: 4.7,
+      reviews: 156,
+      subscriptionTier: "free",
+    },
+
+    // PREMIUM TIER RECIPES
+    {
+      name: "Protein Power Bowl",
+      description: "High-protein bowl with quinoa, chicken, and vegetables",
+      difficulty: "Medium",
+      cookingTime: "25 minutes",
+      servings: 2,
+      calories: 450,
+      image: "🍗",
+      tags: ["High Protein", "Muscle Building", "Premium"],
+      ingredients: [
+        {
+          name: "Chicken breast",
+          productName: "Chicken breast",
+          quantity: "200g",
+          inPantry: false,
+        },
+        {
+          name: "Quinoa",
+          productName: "Quinoa",
+          quantity: "1 cup",
+          inPantry: false,
+        },
+        {
+          name: "Broccoli",
+          productName: "Broccoli",
+          quantity: "2 cups",
+          inPantry: false,
+        },
+        {
+          name: "Cherry tomatoes",
+          productName: "Cherry tomatoes",
+          quantity: "1 cup",
+          inPantry: false,
+        },
+        {
+          name: "Olive oil",
+          productName: "Olive oil",
+          quantity: "2 tbsp",
+          inPantry: false,
+        },
+      ],
+      instructions: [
+        "Cook quinoa according to package instructions",
+        "Season and grill chicken breast",
+        "Steam broccoli until tender",
+        "Assemble bowl with quinoa, chicken, and vegetables",
+        "Drizzle with olive oil and seasonings",
+      ],
+      nutrition: {
+        calories: 450,
+        protein: "35g",
+        fat: "18g",
+        carbs: "35g",
+        fiber: "8g",
+      },
+      dietCompatible: ["keto", "paleo", "mediterranean"],
+      author: "Coach Mike",
+      rating: 4.8,
+      reviews: 234,
+      subscriptionTier: "premium",
+    },
+    {
+      name: "Keto Fat Bombs",
+      description: "Delicious high-fat snacks perfect for ketogenic diet",
+      difficulty: "Easy",
+      cookingTime: "15 minutes",
+      servings: 12,
+      calories: 120,
+      image: "💣",
+      tags: ["Keto", "High Fat", "Quick"],
+      ingredients: [
+        {
+          name: "Coconut oil",
+          productName: "Coconut oil",
+          quantity: "1/2 cup",
+          inPantry: false,
+        },
+        {
+          name: "Cocoa powder",
+          productName: "Cocoa powder",
+          quantity: "1/4 cup",
+          inPantry: false,
+        },
+        {
+          name: "Almonds",
+          productName: "Almonds",
+          quantity: "1/4 cup",
+          inPantry: false,
+        },
+        {
+          name: "Honey",
+          productName: "Honey",
+          quantity: "2 tbsp",
+          inPantry: false,
+        },
+      ],
+      instructions: [
+        "Melt coconut oil in a saucepan",
+        "Mix in cocoa powder and honey",
+        "Pour into silicone molds",
+        "Sprinkle with chopped almonds",
+        "Freeze until solid",
+      ],
+      nutrition: {
+        calories: 120,
+        protein: "2g",
+        fat: "12g",
+        carbs: "4g",
+        fiber: "2g",
+      },
+      dietCompatible: ["keto", "paleo"],
+      author: "Dr. Sarah Wilson",
+      rating: 4.9,
+      reviews: 189,
+      subscriptionTier: "premium",
+    },
+
+    // PRO TIER RECIPES
+    {
+      name: "Elite Recovery Smoothie",
+      description:
+        "Advanced recovery smoothie for elite athletes and performance",
+      difficulty: "Easy",
+      cookingTime: "10 minutes",
+      servings: 1,
+      calories: 380,
+      image: "🥤",
+      tags: ["Recovery", "High Protein", "Elite"],
+      ingredients: [
+        {
+          name: "Protein powder",
+          productName: "Protein powder",
+          quantity: "30g",
+          inPantry: false,
+        },
+        {
+          name: "Banana",
+          productName: "Banana",
+          quantity: "1 medium",
+          inPantry: false,
+        },
+        {
+          name: "Greek yogurt",
+          productName: "Greek yogurt",
+          quantity: "1/2 cup",
+          inPantry: false,
+        },
+        {
+          name: "Almond milk",
+          productName: "Almond milk",
+          quantity: "1 cup",
+          inPantry: false,
+        },
+        {
+          name: "Chia seeds",
+          productName: "Chia seeds",
+          quantity: "1 tbsp",
+          inPantry: false,
+        },
+      ],
+      instructions: [
+        "Add all ingredients to a blender",
+        "Blend until smooth and creamy",
+        "Serve immediately for best results",
+      ],
+      nutrition: {
+        calories: 380,
+        protein: "35g",
+        fat: "8g",
+        carbs: "35g",
+        fiber: "6g",
+      },
+      dietCompatible: ["vegetarian"],
+      author: "Elite Coach",
+      rating: 4.9,
+      reviews: 89,
+      subscriptionTier: "pro",
+    },
+    {
+      name: "Medical-Grade Bone Broth",
+      description: "Therapeutic bone broth for healing and recovery",
+      difficulty: "Hard",
+      cookingTime: "24 hours",
+      servings: 8,
+      calories: 45,
+      image: "🍲",
+      tags: ["Healing", "Therapeutic", "Medical"],
+      ingredients: [
+        {
+          name: "Beef bones",
+          productName: "Beef bones",
+          quantity: "2kg",
+          inPantry: false,
+        },
+        {
+          name: "Onion",
+          productName: "Onion",
+          quantity: "2 medium",
+          inPantry: false,
+        },
+        {
+          name: "Carrots",
+          productName: "Carrots",
+          quantity: "4 medium",
+          inPantry: false,
+        },
+        {
+          name: "Garlic",
+          productName: "Garlic",
+          quantity: "8 cloves",
+          inPantry: false,
+        },
+        {
+          name: "Apple cider vinegar",
+          productName: "Apple cider vinegar",
+          quantity: "2 tbsp",
+          inPantry: false,
+        },
+      ],
+      instructions: [
+        "Roast bones in oven at 400°F for 30 minutes",
+        "Add bones and vegetables to large pot",
+        "Cover with water and add vinegar",
+        "Simmer for 24 hours on low heat",
+        "Strain and store in refrigerator",
+      ],
+      nutrition: {
+        calories: 45,
+        protein: "8g",
+        fat: "2g",
+        carbs: "2g",
+        fiber: "1g",
+      },
+      dietCompatible: ["keto", "paleo", "mediterranean"],
+      author: "Dr. Nutrition Expert",
+      rating: 4.8,
+      reviews: 67,
+      subscriptionTier: "pro",
     },
   ],
 
   dietPlans: [
+    // FREE TIER DIET PLANS
     {
-      name: "Keto",
-      description: "High-fat, low-carb diet for weight loss and energy",
+      name: "Keto Basics",
+      description:
+        "High fat, low carb diet for rapid weight loss and improved metabolism",
       benefits: [
         "Rapid weight loss",
         "Increased energy",
@@ -183,16 +505,11 @@ const seedData = {
         "Stable blood sugar",
       ],
       difficulty: "Medium",
-      duration: "2-4 weeks",
+      duration: "30 days",
       color: "from-purple-500 to-pink-500",
       icon: "🥑",
       price: 0,
-      features: [
-        "Meal plans",
-        "Grocery lists",
-        "Progress tracking",
-        "Community support",
-      ],
+      features: ["Basic meal plans", "Grocery lists", "Community support"],
       sampleMeals: ["Avocado & Eggs", "Salmon with Greens", "Keto Smoothie"],
       restrictions: ["Low carb", "High fat", "Moderate protein"],
       suitableFor: ["Weight loss", "Diabetes management", "Energy boost"],
@@ -212,10 +529,12 @@ const seedData = {
         fat: 140,
         fiber: 25,
       },
+      subscriptionTier: "free",
     },
     {
-      name: "Mediterranean",
-      description: "Heart-healthy diet inspired by Mediterranean cuisine",
+      name: "Mediterranean Essentials",
+      description:
+        "Heart-healthy diet rich in healthy fats, whole grains, and fresh produce",
       benefits: [
         "Heart health",
         "Longevity",
@@ -223,7 +542,7 @@ const seedData = {
         "Reduced inflammation",
       ],
       difficulty: "Easy",
-      duration: "Lifestyle",
+      duration: "60 days",
       color: "from-blue-500 to-cyan-500",
       icon: "🫒",
       price: 0,
@@ -231,7 +550,6 @@ const seedData = {
         "Balanced nutrition",
         "Fresh ingredients",
         "Flexible meal planning",
-        "Family-friendly",
       ],
       sampleMeals: ["Greek Salad", "Grilled Fish", "Hummus & Pita"],
       restrictions: [
@@ -256,9 +574,10 @@ const seedData = {
         fat: 70,
         fiber: 30,
       },
+      subscriptionTier: "free",
     },
     {
-      name: "Vegan",
+      name: "Vegan Starter",
       description: "Plant-based nutrition for ethical and health benefits",
       benefits: [
         "Lower cholesterol",
@@ -267,16 +586,11 @@ const seedData = {
         "Ethical choice",
       ],
       difficulty: "Medium",
-      duration: "Lifestyle",
+      duration: "45 days",
       color: "from-green-500 to-emerald-500",
       icon: "🌱",
       price: 0,
-      features: [
-        "Plant-based recipes",
-        "Nutrition guidance",
-        "Meal prep tips",
-        "Community support",
-      ],
+      features: ["Plant-based recipes", "Nutrition guidance", "Meal prep tips"],
       sampleMeals: ["Tofu Scramble", "Lentil Curry", "Vegan Buddha Bowl"],
       restrictions: ["No animal products", "No dairy", "No eggs"],
       suitableFor: [
@@ -300,6 +614,311 @@ const seedData = {
         fat: 60,
         fiber: 35,
       },
+      subscriptionTier: "free",
+    },
+
+    // PREMIUM TIER DIET PLANS
+    {
+      name: "High-Protein Muscle Builder",
+      description:
+        "Optimized nutrition for muscle growth and athletic performance",
+      benefits: [
+        "Muscle growth",
+        "Improved strength",
+        "Better recovery",
+        "Enhanced performance",
+      ],
+      difficulty: "Medium",
+      duration: "90 days",
+      color: "from-orange-500 to-red-500",
+      icon: "💪",
+      price: 499,
+      features: [
+        "Advanced meal plans",
+        "Progress tracking",
+        "Personalized macros",
+        "Expert guidance",
+      ],
+      sampleMeals: [
+        "Protein Smoothie",
+        "Grilled Chicken Bowl",
+        "Lean Beef with Sweet Potato",
+      ],
+      restrictions: ["High protein", "Moderate carbs", "Timed nutrition"],
+      suitableFor: [
+        "Muscle building",
+        "Athletic performance",
+        "Strength training",
+      ],
+      weeklyMeals: [],
+      groceryList: [
+        "Chicken breast",
+        "Lean beef",
+        "Fish",
+        "Eggs",
+        "Greek yogurt",
+        "Protein powder",
+        "Quinoa",
+        "Sweet potatoes",
+      ],
+      nutritionInfo: {
+        calories: 2500,
+        protein: 180,
+        carbs: 200,
+        fat: 80,
+        fiber: 35,
+      },
+      subscriptionTier: "premium",
+    },
+    {
+      name: "DASH Heart Health",
+      description:
+        "Dietary Approaches to Stop Hypertension - clinically proven heart-healthy eating",
+      benefits: [
+        "Lower blood pressure",
+        "Heart health",
+        "Reduced stroke risk",
+        "Better cholesterol",
+      ],
+      difficulty: "Easy",
+      duration: "60 days",
+      color: "from-red-500 to-pink-500",
+      icon: "❤️",
+      price: 499,
+      features: [
+        "Medical-grade plans",
+        "Blood pressure tracking",
+        "Heart health monitoring",
+        "Expert consultation",
+      ],
+      sampleMeals: [
+        "Oatmeal with Berries",
+        "Grilled Chicken Salad",
+        "Baked Fish with Vegetables",
+      ],
+      restrictions: ["Low sodium", "Heart-healthy fats", "High fiber"],
+      suitableFor: ["Heart health", "Hypertension", "Cholesterol management"],
+      weeklyMeals: [],
+      groceryList: [
+        "Oatmeal",
+        "Fresh fruits",
+        "Vegetables",
+        "Lean proteins",
+        "Low-fat dairy",
+        "Nuts and seeds",
+      ],
+      nutritionInfo: {
+        calories: 1800,
+        protein: 100,
+        carbs: 250,
+        fat: 60,
+        fiber: 40,
+      },
+      subscriptionTier: "premium",
+    },
+    {
+      name: "Weight Loss Pro",
+      description:
+        "Advanced weight loss program with personalized coaching and tracking",
+      benefits: [
+        "Sustainable weight loss",
+        "Metabolic boost",
+        "Improved body composition",
+        "Long-term success",
+      ],
+      difficulty: "Medium",
+      duration: "120 days",
+      color: "from-blue-500 to-purple-500",
+      icon: "📉",
+      price: 499,
+      features: [
+        "Personalized coaching",
+        "Progress tracking",
+        "Metabolic testing",
+        "Community support",
+      ],
+      sampleMeals: [
+        "Green Smoothie Bowl",
+        "Lean Protein Salad",
+        "Light Dinner Options",
+      ],
+      restrictions: ["Calorie deficit", "High protein", "Low processed foods"],
+      suitableFor: ["Weight loss", "Body composition", "Metabolic health"],
+      weeklyMeals: [],
+      groceryList: [
+        "Lean proteins",
+        "Fresh vegetables",
+        "Complex carbs",
+        "Healthy fats",
+        "Protein supplements",
+      ],
+      nutritionInfo: {
+        calories: 1500,
+        protein: 120,
+        carbs: 150,
+        fat: 50,
+        fiber: 30,
+      },
+      subscriptionTier: "premium",
+    },
+
+    // PRO TIER DIET PLANS
+    {
+      name: "Intermittent Fasting Elite",
+      description:
+        "Advanced intermittent fasting protocol with personalized coaching and monitoring",
+      benefits: [
+        "Rapid fat loss",
+        "Autophagy benefits",
+        "Improved insulin sensitivity",
+        "Enhanced longevity",
+      ],
+      difficulty: "Hard",
+      duration: "90 days",
+      color: "from-purple-500 to-indigo-500",
+      icon: "⏰",
+      price: 799,
+      features: [
+        "1-on-1 coaching",
+        "Advanced tracking",
+        "Biometric monitoring",
+        "Custom protocols",
+      ],
+      sampleMeals: [
+        "Fasting protocols",
+        "High-protein meals",
+        "Nutrient timing",
+      ],
+      restrictions: [
+        "Fasting windows",
+        "Specific meal timing",
+        "Strict protocols",
+      ],
+      suitableFor: [
+        "Advanced fasting",
+        "Fat loss",
+        "Longevity",
+        "Metabolic health",
+      ],
+      weeklyMeals: [],
+      groceryList: [
+        "High-quality proteins",
+        "Healthy fats",
+        "Low-carb vegetables",
+        "Supplements",
+        "Electrolytes",
+      ],
+      nutritionInfo: {
+        calories: 1800,
+        protein: 150,
+        carbs: 100,
+        fat: 100,
+        fiber: 25,
+      },
+      subscriptionTier: "pro",
+    },
+    {
+      name: "Athletic Performance Elite",
+      description:
+        "Elite nutrition program for professional athletes and high-performance individuals",
+      benefits: [
+        "Peak performance",
+        "Optimal recovery",
+        "Enhanced endurance",
+        "Competitive edge",
+      ],
+      difficulty: "Expert",
+      duration: "180 days",
+      color: "from-yellow-500 to-orange-500",
+      icon: "🏆",
+      price: 799,
+      features: [
+        "Elite coaching",
+        "Performance analytics",
+        "Recovery optimization",
+        "Competition prep",
+      ],
+      sampleMeals: [
+        "Performance meals",
+        "Recovery shakes",
+        "Competition nutrition",
+      ],
+      restrictions: [
+        "Performance-focused",
+        "Timed nutrition",
+        "Supplement protocols",
+      ],
+      suitableFor: [
+        "Professional athletes",
+        "Elite performance",
+        "Competition prep",
+      ],
+      weeklyMeals: [],
+      groceryList: [
+        "Premium proteins",
+        "Performance supplements",
+        "Recovery products",
+        "Elite nutrition",
+      ],
+      nutritionInfo: {
+        calories: 3000,
+        protein: 200,
+        carbs: 300,
+        fat: 100,
+        fiber: 40,
+      },
+      subscriptionTier: "pro",
+    },
+    {
+      name: "Medical Nutrition Therapy",
+      description:
+        "Specialized nutrition plans for medical conditions with expert supervision",
+      benefits: [
+        "Medical-grade nutrition",
+        "Condition management",
+        "Expert supervision",
+        "Health monitoring",
+      ],
+      difficulty: "Expert",
+      duration: "365 days",
+      color: "from-green-500 to-blue-500",
+      icon: "🏥",
+      price: 799,
+      features: [
+        "Medical supervision",
+        "Condition-specific plans",
+        "Regular monitoring",
+        "Expert consultation",
+      ],
+      sampleMeals: [
+        "Medical-grade meals",
+        "Condition-specific nutrition",
+        "Therapeutic foods",
+      ],
+      restrictions: [
+        "Medical protocols",
+        "Specific guidelines",
+        "Regular monitoring",
+      ],
+      suitableFor: [
+        "Medical conditions",
+        "Therapeutic nutrition",
+        "Health management",
+      ],
+      weeklyMeals: [],
+      groceryList: [
+        "Medical-grade foods",
+        "Supplements",
+        "Therapeutic ingredients",
+      ],
+      nutritionInfo: {
+        calories: 2000,
+        protein: 120,
+        carbs: 200,
+        fat: 70,
+        fiber: 30,
+      },
+      subscriptionTier: "pro",
     },
   ],
 
@@ -539,7 +1158,7 @@ const seedData = {
       supplier: "Fresh Valley Farms",
     },
     {
-        name: "Organic Quinoa",
+      name: "Organic Quinoa",
       description: "Premium organic quinoa rich in protein and fiber",
       price: 299,
       originalPrice: 399,
@@ -639,7 +1258,7 @@ const seedData = {
       tags: ["Organic", "Fresh", "Local"],
       supplier: "Fresh Valley Farms",
     },
-      {
+    {
       name: "Salt",
       description: "Fine sea salt for cooking and seasoning",
       price: 25,
@@ -694,6 +1313,265 @@ const seedData = {
       tags: ["Natural", "Pure", "Local"],
       supplier: "Honey Farm",
     },
+    {
+      name: "Oats",
+      description: "Whole grain oats, perfect for breakfast and baking",
+      price: 45,
+      originalPrice: 55,
+      category: "Grains",
+      dietCompatible: ["vegan", "vegetarian", "mediterranean", "dash"],
+      image: "🌾",
+      inStock: true,
+      stockQuantity: 80,
+      unit: "500g",
+      rating: 4.6,
+      reviews: 78,
+      tags: ["Whole Grain", "Healthy", "Local"],
+      supplier: "Fresh Valley Farms",
+    },
+    {
+      name: "Almond milk",
+      description: "Plant-based almond milk, dairy-free alternative",
+      price: 120,
+      originalPrice: 150,
+      category: "Beverages",
+      dietCompatible: [
+        "vegan",
+        "vegetarian",
+        "keto",
+        "paleo",
+        "mediterranean",
+        "dash",
+      ],
+      image: "🥛",
+      inStock: true,
+      stockQuantity: 60,
+      unit: "1L",
+      rating: 4.5,
+      reviews: 134,
+      tags: ["Plant-based", "Dairy-free", "Healthy"],
+      supplier: "Plant Milk Co.",
+    },
+    {
+      name: "Chia seeds",
+      description: "Nutrient-rich chia seeds, excellent source of omega-3",
+      price: 180,
+      originalPrice: 220,
+      category: "Seeds",
+      dietCompatible: [
+        "vegan",
+        "vegetarian",
+        "keto",
+        "paleo",
+        "mediterranean",
+        "dash",
+      ],
+      image: "🌱",
+      inStock: true,
+      stockQuantity: 40,
+      unit: "250g",
+      rating: 4.7,
+      reviews: 89,
+      tags: ["Superfood", "Omega-3", "Premium"],
+      supplier: "Superfood Market",
+    },
+    {
+      name: "Mixed berries",
+      description: "Fresh mixed berries, perfect for smoothies and desserts",
+      price: 150,
+      originalPrice: 180,
+      category: "Fruits",
+      dietCompatible: ["vegan", "vegetarian", "mediterranean", "dash"],
+      image: "🫐",
+      inStock: true,
+      stockQuantity: 50,
+      unit: "300g",
+      rating: 4.6,
+      reviews: 67,
+      tags: ["Fresh", "Antioxidant", "Local"],
+      supplier: "Fresh Valley Farms",
+    },
+    {
+      name: "Granola",
+      description: "Homemade granola with nuts and dried fruits",
+      price: 200,
+      originalPrice: 250,
+      category: "Breakfast",
+      dietCompatible: ["vegetarian", "mediterranean"],
+      image: "🥣",
+      inStock: true,
+      stockQuantity: 30,
+      unit: "400g",
+      rating: 4.5,
+      reviews: 45,
+      tags: ["Homemade", "Healthy", "Local"],
+      supplier: "Local Bakery",
+    },
+    {
+      name: "Chicken breast",
+      description: "Lean chicken breast, excellent source of protein",
+      price: 300,
+      originalPrice: 350,
+      category: "Meat",
+      dietCompatible: ["keto", "paleo", "mediterranean", "dash"],
+      image: "🍗",
+      inStock: true,
+      stockQuantity: 45,
+      unit: "500g",
+      rating: 4.8,
+      reviews: 234,
+      tags: ["Lean", "High Protein", "Fresh"],
+      supplier: "Fresh Valley Farms",
+    },
+    {
+      name: "Broccoli",
+      description: "Fresh organic broccoli, rich in vitamins and minerals",
+      price: 60,
+      originalPrice: 75,
+      category: "Vegetables",
+      dietCompatible: [
+        "vegan",
+        "vegetarian",
+        "keto",
+        "paleo",
+        "mediterranean",
+        "dash",
+      ],
+      image: "🥦",
+      inStock: true,
+      stockQuantity: 70,
+      unit: "500g",
+      rating: 4.6,
+      reviews: 89,
+      tags: ["Organic", "Fresh", "Local"],
+      supplier: "Fresh Valley Farms",
+    },
+    {
+      name: "Coconut oil",
+      description: "Pure coconut oil, perfect for cooking and baking",
+      price: 250,
+      originalPrice: 300,
+      category: "Oils",
+      dietCompatible: ["vegan", "vegetarian", "keto", "paleo", "mediterranean"],
+      image: "🥥",
+      inStock: true,
+      stockQuantity: 35,
+      unit: "500ml",
+      rating: 4.7,
+      reviews: 156,
+      tags: ["Pure", "Organic", "Premium"],
+      supplier: "Coconut Paradise",
+    },
+    {
+      name: "Cocoa powder",
+      description: "Pure cocoa powder, perfect for baking and beverages",
+      price: 180,
+      originalPrice: 220,
+      category: "Baking",
+      dietCompatible: ["vegan", "vegetarian", "keto", "paleo", "mediterranean"],
+      image: "🍫",
+      inStock: true,
+      stockQuantity: 25,
+      unit: "200g",
+      rating: 4.6,
+      reviews: 78,
+      tags: ["Pure", "Organic", "Premium"],
+      supplier: "Chocolate World",
+    },
+    {
+      name: "Protein powder",
+      description: "High-quality whey protein powder for muscle building",
+      price: 1200,
+      originalPrice: 1500,
+      category: "Supplements",
+      dietCompatible: ["vegetarian"],
+      image: "💪",
+      inStock: true,
+      stockQuantity: 20,
+      unit: "1kg",
+      rating: 4.8,
+      reviews: 345,
+      tags: ["High Quality", "Muscle Building", "Premium"],
+      supplier: "Fitness Nutrition",
+    },
+    {
+      name: "Banana",
+      description: "Fresh organic bananas, perfect for smoothies and snacks",
+      price: 40,
+      originalPrice: 50,
+      category: "Fruits",
+      dietCompatible: ["vegan", "vegetarian", "mediterranean", "dash"],
+      image: "🍌",
+      inStock: true,
+      stockQuantity: 120,
+      unit: "1kg",
+      rating: 4.5,
+      reviews: 67,
+      tags: ["Organic", "Fresh", "Local"],
+      supplier: "Fresh Valley Farms",
+    },
+    {
+      name: "Beef bones",
+      description: "Premium beef bones for making nutritious bone broth",
+      price: 150,
+      originalPrice: 180,
+      category: "Meat",
+      dietCompatible: ["keto", "paleo", "mediterranean"],
+      image: "🦴",
+      inStock: true,
+      stockQuantity: 15,
+      unit: "1kg",
+      rating: 4.7,
+      reviews: 45,
+      tags: ["Premium", "Nutritious", "Local"],
+      supplier: "Fresh Valley Farms",
+    },
+    {
+      name: "Carrots",
+      description: "Fresh organic carrots, rich in beta-carotene",
+      price: 35,
+      originalPrice: 45,
+      category: "Vegetables",
+      dietCompatible: [
+        "vegan",
+        "vegetarian",
+        "keto",
+        "paleo",
+        "mediterranean",
+        "dash",
+      ],
+      image: "🥕",
+      inStock: true,
+      stockQuantity: 90,
+      unit: "500g",
+      rating: 4.6,
+      reviews: 78,
+      tags: ["Organic", "Fresh", "Local"],
+      supplier: "Fresh Valley Farms",
+    },
+    {
+      name: "Apple cider vinegar",
+      description: "Raw unfiltered apple cider vinegar with mother",
+      price: 120,
+      originalPrice: 150,
+      category: "Condiments",
+      dietCompatible: [
+        "vegan",
+        "vegetarian",
+        "keto",
+        "paleo",
+        "mediterranean",
+        "dash",
+      ],
+      image: "🍎",
+      inStock: true,
+      stockQuantity: 30,
+      unit: "500ml",
+      rating: 4.7,
+      reviews: 89,
+      tags: ["Raw", "Unfiltered", "Therapeutic"],
+      supplier: "Health Foods Co.",
+    },
   ],
 
   partnerships: [
@@ -742,60 +1620,46 @@ const seedData = {
       website: "www.coastalfishmarket.com",
     },
   ],
-
-  userProgress: [
-    {
-      userId: null, // Will be set after user creation
-      dietPlanId: null, // Will be set after diet plan creation
-      startDate: "2024-01-15T10:00:00Z",
-      currentWeight: 75,
-      targetWeight: 70,
-      measurements: {
-        chest: 95,
-        waist: 85,
-        hips: 95,
-        arms: 32,
-        thighs: 55,
-      },
-      progressPhotos: [],
-      notes: "Starting keto diet for weight loss",
-    },
-  ],
 };
 
 async function seedDatabase() {
   try {
-    const uri =
-      process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/nutricart";
+    console.log("Starting database seeding...");
+    const uri = process.env.MONGODB_URI.toString();
+    console.log("Connecting to:", uri);
     await mongoose.connect(uri, {
-      dbName: process.env.MONGODB_DB || "nutricart",
+      dbName: process.env.MONGODB_DB,
     });
-    console.log("Connected to MongoDB");
+    console.log("✅ Connected to MongoDB");
 
     // Clear existing data
-    await User.deleteMany({});
+    console.log("🗑️ Clearing existing data...");
     await Product.deleteMany({});
     await DietPlan.deleteMany({});
     await Recipe.deleteMany({});
     await Partnership.deleteMany({});
-    await UserProgress.deleteMany({});
-    console.log("Cleared existing data");
+    console.log("✅ Cleared existing data");
 
     // Seed data
-    const users = await User.insertMany(seedData.users);
-    const products = await Product.insertMany(seedData.products);
-    const dietPlans = await DietPlan.insertMany(seedData.dietPlans);
-    const recipes = await Recipe.insertMany(seedData.recipes);
-    const partnerships = await Partnership.insertMany(seedData.partnerships);
-    const userProgress = await UserProgress.insertMany(seedData.userProgress);
+    console.log("📊 Inserting seed data...");
 
-    console.log("Database seeded successfully!");
-    console.log(`Users: ${users.length}`);
-    console.log(`Products: ${products.length}`);
-    console.log(`Diet Plans: ${dietPlans.length}`);
-    console.log(`Recipes: ${recipes.length}`);
-    console.log(`Partnerships: ${partnerships.length}`);
-    console.log(`User Progress: ${userProgress.length}`);
+    console.log("🛒 Inserting products...");
+    const products = await Product.insertMany(seedData.products);
+
+    console.log("🥗 Inserting diet plans...");
+    const dietPlans = await DietPlan.insertMany(seedData.dietPlans);
+
+    console.log("🍳 Inserting recipes...");
+    const recipes = await Recipe.insertMany(seedData.recipes);
+
+    console.log("🤝 Inserting partnerships...");
+    const partnerships = await Partnership.insertMany(seedData.partnerships);
+
+    console.log("✅ Database seeded successfully!");
+    console.log(`🛒 Products: ${products.length}`);
+    console.log(`🥗 Diet Plans: ${dietPlans.length}`);
+    console.log(`🍳 Recipes: ${recipes.length}`);
+    console.log(`🤝 Partnerships: ${partnerships.length}`);
 
     process.exit(0);
   } catch (error) {

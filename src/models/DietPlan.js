@@ -10,6 +10,11 @@ const DietPlanSchema = new mongoose.Schema(
     color: String,
     icon: String,
     price: Number,
+    subscriptionTier: {
+      type: String,
+      enum: ["free", "premium", "pro"],
+      default: "free",
+    },
     features: [String],
     sampleMeals: [String],
     restrictions: [String],

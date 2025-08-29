@@ -18,9 +18,9 @@ const PORT = process.env.PORT || 4000;
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || process.env.CORS_ORIGIN,
+    // origin: process.env.FRONTEND_URL || process.env.CORS_ORIGIN,
+    origin: "http://localhost:3000",
     methods: ["GET", "POST", "PUT", "DELETE"],
-    // origin: "http://localhost:3000",
     credentials: true,
   })
 );
@@ -28,84 +28,25 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 async function connectDB() {
-  const uri = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/nutricart";
+  const uri = process.env.MONGODB_URI;
   await mongoose.connect(uri, {
-    dbName: process.env.MONGODB_DB || "nutricart",
+    dbName: process.env.MONGODB_DB,
   });
   console.log("Connected to MongoDB");
-}
 
-async function seedIfEmpty() {
-  const dietCount = await DietPlan.countDocuments();
-  if (dietCount === 0) {
-    await DietPlan.insertMany([
-      {
-        name: "Keto",
-        description: "High-fat, low-carb diet",
-        benefits: ["Rapid weight loss"],
-        difficulty: "Medium",
-        duration: "2-4 weeks",
-        color: "from-purple-500 to-pink-500",
-        icon: "🥑",
-        price: 0,
-        features: [],
-        sampleMeals: [],
-        restrictions: [],
-        suitableFor: ["Weight loss"],
-      },
-      {
-        name: "Mediterranean",
-        description: "Heart-healthy diet",
-        benefits: ["Heart health"],
-        difficulty: "Easy",
-        duration: "Lifestyle",
-        color: "from-blue-500 to-cyan-500",
-        icon: "🫒",
-        price: 0,
-        features: [],
-        sampleMeals: [],
-        restrictions: [],
-        suitableFor: ["Heart health"],
-      },
-    ]);
-  }
-  const prodCount = await Product.countDocuments();
-  if (prodCount === 0) {
-    await Product.insertMany([
-      {
-        name: "Organic Quinoa",
-        description: "Protein and fiber rich",
-        price: 299,
-        originalPrice: 399,
-        category: "Grains",
-        dietCompatible: ["vegan", "vegetarian", "gluten-free", "keto", "paleo"],
-        image: "🌾",
-        inStock: true,
-        stockQuantity: 50,
-        unit: "500g",
-        rating: 4.8,
-        reviews: 124,
-        supplier: "Fresh Valley Farms",
-        tags: ["Organic"],
-      },
-      {
-        name: "Fresh Salmon Fillet",
-        description: "Omega-3 rich",
-        price: 899,
-        originalPrice: 1199,
-        category: "Seafood",
-        dietCompatible: ["keto", "paleo", "mediterranean", "dash"],
-        image: "🐟",
-        inStock: true,
-        stockQuantity: 25,
-        unit: "300g",
-        rating: 4.9,
-        reviews: 89,
-        tags: ["Premium"],
-        supplier: "Coastal Fish Market",
-      },
-    ]);
-  }
+  // Debug: List all databases to find where the user data actually is
+  const admin = mongoose.connection.db.admin();
+  const databases = await admin.listDatabases();
+  console.log(
+    "📊 Available databases:",
+    databases.databases.map((db) => db.name)
+  );
+
+  // Check current database
+  console.log(
+    "🔗 Currently connected to database:",
+    mongoose.connection.db.databaseName
+  );
 }
 
 // Health
@@ -144,15 +85,108 @@ app.post("/api/auth/register", async (req, res) => {
 app.post("/api/auth/login", async (req, res) => {
   try {
     const { email, password } = req.body || {};
-    const user = await User.findOne({ email });
-    if (!user || user.password !== password)
+
+    console.log("🔐 Login attempt received:", {
+      email: email || "missing",
+      hasPassword: password,
+    });
+
+    if (!email || !password) {
+      console.log("❌ Missing email or password");
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
+    }
+
+    // Use raw MongoDB query to avoid Mongoose validation issues during lookup
+    const db = mongoose.connection.db;
+    const usersCollection = db.collection("users");
+    // console.log("🔍 Users collection:", usersCollection);
+
+    console.log("🔍 Database info:", {
+      dbName: db.databaseName,
+      collectionName: "users",
+    });
+
+    // Debug: List all users to see what's actually in the database
+    const allUsers = await usersCollection.find().toArray();
+    console.log("📋 All users in database:", allUsers);
+    const user = await usersCollection.findOne({ email: email.toString() });
+    console.log("🔍 User:", user);
+    console.log("🔍 User lookup result:", {
+      found: !!user,
+      email: user?.email,
+      hasPassword: !!user?.password,
+    });
+
+    if (!user) {
+      console.log("❌ User not found for email:", email);
       return res.status(401).json({ message: "Invalid email or password" });
-    user.lastLogin = new Date().toISOString();
-    await user.save();
-    const { password: _pw, _id, ...safe } = user.toObject();
+    }
+
+    if (user.password !== password) {
+      console.log("❌ Password mismatch for user:", email);
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
+
+    console.log("✅ Password verified for user:", email);
+
+    // Ensure subscription is in correct format
+    if (
+      !user.subscription ||
+      typeof user.subscription === "string" ||
+      !user.subscription.tier
+    ) {
+      console.log("Ensuring proper subscription format for user:", user.email);
+
+      const tier = user.subscription.tier;
+      const properSubscription = {
+        tier: tier === "premium" ? "premium" : tier === "pro" ? "pro" : "free",
+        isActive: true,
+        features: {
+          basicDietPlans: true,
+          basicRecipes: true,
+          progressTracking: tier === "premium" || tier === "pro",
+          premiumDietPlans: tier === "premium" || tier === "pro",
+          prioritySupport: tier === "premium" || tier === "pro",
+          exclusiveRecipes: tier === "premium" || tier === "pro",
+          nutritionalAnalysis: tier === "premium" || tier === "pro",
+          advancedAnalytics: tier === "pro",
+          restaurantRecommendations: tier === "pro",
+          prioritySupport24x7: tier === "pro",
+          exclusiveWorkshops: tier === "pro",
+          proRecipes: tier === "pro",
+          proDietPlans: tier === "pro",
+          oneOnOneConsultation: tier === "pro",
+        },
+      };
+
+      // Update using raw MongoDB to avoid validation
+      await usersCollection.updateOne(
+        { _id: user._id },
+        {
+          $set: {
+            subscription: properSubscription,
+            lastLogin: new Date().toISOString(),
+          },
+        }
+      );
+
+      // Update the user object for response
+      user.subscription = properSubscription;
+      user.lastLogin = new Date().toISOString();
+    } else {
+      // Update lastLogin only
+      await usersCollection.updateOne(
+        { _id: user._id },
+        { $set: { lastLogin: new Date().toISOString() } }
+      );
+      user.lastLogin = new Date().toISOString();
+    }
+    const { password: _pw, _id, ...safe } = user;
     const token = `mock-jwt-${user._id}-${Date.now()}`;
     const response = { user: { ...safe, id: user._id }, token };
-    console.log("User logged in:", {
+    console.log("✅ User logged in successfully:", {
       id: response.user.id,
       email: response.user.email,
     });
@@ -351,7 +385,25 @@ app.get("/api/users/:userId/cart", async (req, res) => {
     }
 
     const cart = await Cart.findOne({ userId });
-    res.json(cart || { items: [], total: 0 });
+
+    if (!cart) {
+      return res.json({ items: [], total: 0, subtotal: 0, count: 0 });
+    }
+
+    // Transform cart to match frontend expectations
+    const transformedCart = {
+      items: cart.items.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        price: item.price,
+        total: item.price * item.quantity,
+      })),
+      total: cart.total,
+      subtotal: cart.total,
+      count: cart.items.reduce((sum, item) => sum + item.quantity, 0),
+    };
+
+    res.json(transformedCart);
   } catch (error) {
     console.error("Error fetching cart:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -396,14 +448,28 @@ app.post("/api/users/:userId/cart/items", async (req, res) => {
     let cart = await Cart.findOne({ userId });
     if (!cart) cart = new Cart({ userId, items: [], total: 0 });
 
-    const idx = cart.items.findIndex((i) => i.productId === productId);
-    if (idx !== -1) {
-      cart.items[idx].quantity += quantity;
+    // Add item to cart manually since the model doesn't have addItem method
+    const existingItemIndex = cart.items.findIndex(
+      (item) => item.productId === productId
+    );
+
+    if (existingItemIndex !== -1) {
+      // Update existing item quantity
+      cart.items[existingItemIndex].quantity += quantity;
     } else {
-      cart.items.push({ productId, quantity, price: product.price });
+      // Add new item
+      cart.items.push({
+        productId: productId,
+        quantity: quantity,
+        price: product.price,
+      });
     }
 
-    cart.total = cart.items.reduce((s, i) => s + i.price * i.quantity, 0);
+    // Calculate total
+    cart.total = cart.items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
     await cart.save();
 
     console.log("Cart updated successfully:", {
@@ -411,7 +477,20 @@ app.post("/api/users/:userId/cart/items", async (req, res) => {
       total: cart.total,
     });
 
-    res.status(201).json(cart);
+    // Transform cart to match frontend expectations
+    const transformedCart = {
+      items: cart.items.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        price: item.price,
+        total: item.price * item.quantity,
+      })),
+      total: cart.total,
+      subtotal: cart.total,
+      count: cart.items.reduce((sum, item) => sum + item.quantity, 0),
+    };
+
+    res.status(201).json(transformedCart);
   } catch (error) {
     console.error("Error adding to cart:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -437,10 +516,31 @@ app.patch("/api/users/:userId/cart/items/:productId", async (req, res) => {
     if (idx === -1)
       return res.status(404).json({ message: "Item not found in cart" });
     if (quantity <= 0) cart.items.splice(idx, 1);
-    else cart.items[idx].quantity = quantity;
-    cart.total = cart.items.reduce((s, i) => s + i.price * i.quantity, 0);
+    else {
+      cart.items[idx].quantity = quantity;
+    }
+
+    // Recalculate total
+    cart.total = cart.items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
     await cart.save();
-    res.json(cart);
+
+    // Transform cart to match frontend expectations
+    const transformedCart = {
+      items: cart.items.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        price: item.price,
+        total: item.price * item.quantity,
+      })),
+      total: cart.total,
+      subtotal: cart.total,
+      count: cart.items.reduce((sum, item) => sum + item.quantity, 0),
+    };
+
+    res.json(transformedCart);
   } catch (error) {
     console.error("Error updating cart:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -458,10 +558,34 @@ app.delete("/api/users/:userId/cart/items/:productId", async (req, res) => {
 
     const cart = await Cart.findOne({ userId });
     if (!cart) return res.status(404).json({ message: "Cart not found" });
-    cart.items = cart.items.filter((i) => i.productId !== req.params.productId);
-    cart.total = cart.items.reduce((s, i) => s + i.price * i.quantity, 0);
+    const idx = cart.items.findIndex(
+      (i) => i.productId === req.params.productId
+    );
+    if (idx !== -1) {
+      cart.items.splice(idx, 1);
+    }
+
+    // Recalculate total
+    cart.total = cart.items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
     await cart.save();
-    res.status(204).end();
+
+    // Transform cart to match frontend expectations
+    const transformedCart = {
+      items: cart.items.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        price: item.price,
+        total: item.price * item.quantity,
+      })),
+      total: cart.total,
+      subtotal: cart.total,
+      count: cart.items.reduce((sum, item) => sum + item.quantity, 0),
+    };
+
+    res.json(transformedCart);
   } catch (error) {
     console.error("Error removing from cart:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -502,9 +626,11 @@ app.get("/api/users/:userId/orders", async (req, res) => {
     const orders = await Order.find({ userId }).sort({
       orderDate: -1,
     });
+
+    console.log(`✅ Fetched ${orders.length} orders for user: ${userId}`);
     res.json(orders);
   } catch (error) {
-    console.error("Error fetching orders:", error);
+    console.error("❌ Error fetching orders:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
@@ -521,28 +647,251 @@ app.post("/api/users/:userId/orders", async (req, res) => {
     const cart = await Cart.findOne({ userId });
     if (!cart || cart.items.length === 0)
       return res.status(400).json({ message: "Cart is empty" });
-    const order = await Order.create({
+
+    // Create order with proper structure
+    const orderData = {
       userId,
-      items: cart.items,
-      total: cart.total,
-      ...req.body,
-      orderDate: new Date().toISOString(),
-    });
+      items:
+        req.body.items ||
+        cart.items.map((item) => ({
+          productId: item.productId,
+          productName: item.productName || "Product",
+          quantity: item.quantity,
+          price: item.price,
+          total: item.price * item.quantity,
+        })),
+      subtotal: req.body.subtotal || cart.total,
+      tax: req.body.tax || 0,
+      shipping: req.body.shipping || 0,
+      total: req.body.total || cart.total,
+      shippingAddress: req.body.shippingAddress || {},
+      paymentMethod: req.body.paymentMethod || "card",
+      paymentDetails: req.body.paymentDetails || {},
+      orderDate: new Date(),
+      status: "processing",
+    };
+
+    const order = await Order.create(orderData);
+
+    // Clear cart after successful order creation
     cart.items = [];
     cart.total = 0;
     await cart.save();
+
+    console.log("✅ Order created successfully:", order._id);
     res.status(201).json(order);
   } catch (error) {
-    console.error("Error creating order:", error);
+    console.error("❌ Error creating order:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// Update user profile
+app.put("/api/auth/profile", async (req, res) => {
+  try {
+    const authToken = req.headers.authorization;
+    if (!authToken) {
+      return res
+        .status(401)
+        .json({ message: "No authorization token provided" });
+    }
+
+    // Extract user ID from token (simple extraction for demo)
+    const tokenParts = authToken.replace("Bearer ", "").split("-");
+    if (tokenParts.length < 2) {
+      return res.status(401).json({ message: "Invalid token format" });
+    }
+
+    const userId = tokenParts[1]; // Extract user ID from token
+    const profileData = req.body;
+
+    console.log("Updating profile for user:", userId);
+    console.log("Profile data:", profileData);
+
+    // Use raw MongoDB to avoid validation issues
+    const db = mongoose.connection.db;
+    const usersCollection = db.collection("users");
+
+    const result = await usersCollection.updateOne(
+      { _id: new mongoose.Types.ObjectId(userId) },
+      { $set: profileData }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Get updated user data
+    const updatedUser = await usersCollection.findOne({
+      _id: new mongoose.Types.ObjectId(userId),
+    });
+    const { password, _id, ...safeUser } = updatedUser;
+
+    console.log("✅ Profile updated successfully in database");
+    res.json({ ...safeUser, id: updatedUser._id });
+  } catch (error) {
+    console.error("❌ Error updating profile:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// Get user by ID
+app.get("/api/users/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    console.log("Fetching user:", userId);
+
+    // Use raw MongoDB to avoid validation issues
+    const db = mongoose.connection.db;
+    const usersCollection = db.collection("users");
+
+    const user = await usersCollection.findOne({
+      _id: new mongoose.Types.ObjectId(userId),
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const { password, _id, ...safeUser } = user;
+    res.json({ ...safeUser, id: user._id });
+  } catch (error) {
+    console.error("❌ Error fetching user:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// Update user profile
+app.put("/api/auth/profile", async (req, res) => {
+  try {
+    const authToken = req.headers.authorization;
+    if (!authToken) {
+      return res
+        .status(401)
+        .json({ message: "No authorization token provided" });
+    }
+
+    const tokenParts = authToken.replace("Bearer ", "").split("-");
+    if (tokenParts.length < 2) {
+      return res.status(401).json({ message: "Invalid token format" });
+    }
+
+    const userId = tokenParts[1];
+    const profileData = req.body;
+
+    console.log("Updating profile for user:", userId);
+    console.log("Profile data:", profileData);
+
+    // Use raw MongoDB to avoid validation issues
+    const db = mongoose.connection.db;
+    const usersCollection = db.collection("users");
+
+    const result = await usersCollection.updateOne(
+      { _id: new mongoose.Types.ObjectId(userId) },
+      { $set: profileData }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const updatedUser = await usersCollection.findOne({
+      _id: new mongoose.Types.ObjectId(userId),
+    });
+    const { password, _id, ...safeUser } = updatedUser;
+
+    console.log("✅ Profile updated successfully in database");
+    res.json({ ...safeUser, id: updatedUser._id });
+  } catch (error) {
+    console.error("❌ Error updating profile:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// Start diet plan for user
+app.post("/api/diet-plans/:planId/start", async (req, res) => {
+  try {
+    const { planId } = req.params;
+    const { userId, formData } = req.body;
+
+    console.log("Starting diet plan:", planId, "for user:", userId);
+    console.log("Form data:", formData);
+
+    // Validate userId
+    if (!userId || userId === "undefined" || userId === "null") {
+      return res.status(400).json({ message: "Invalid user ID" });
+    }
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      console.error("Invalid ObjectId format:", userId);
+      return res.status(400).json({ message: "Invalid user ID format" });
+    }
+
+    // Use raw MongoDB to avoid validation issues
+    const db = mongoose.connection.db;
+    const usersCollection = db.collection("users");
+
+    // Update user with diet plan data
+    const result = await usersCollection.updateOne(
+      { _id: new mongoose.Types.ObjectId(userId) },
+      {
+        $set: {
+          "preferences.activeDietPlan": planId,
+          "preferences.dietPlanStartDate": new Date().toISOString(),
+          "preferences.dietPlanGoals": formData,
+        },
+      }
+    );
+
+    if (result.matchedCount === 0) {
+      console.error("User not found with ID:", userId);
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    console.log("✅ Diet plan started successfully");
+    res.json({ success: true, message: "Diet plan started successfully" });
+  } catch (error) {
+    console.error("❌ Error starting diet plan:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// Update user subscription
+app.put("/api/users/:userId/subscription", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { subscription } = req.body;
+
+    console.log("Updating subscription for user:", userId);
+    console.log("New subscription data:", subscription);
+
+    // Use raw MongoDB to avoid validation issues
+    const db = mongoose.connection.db;
+    const usersCollection = db.collection("users");
+
+    const result = await usersCollection.updateOne(
+      { _id: new mongoose.Types.ObjectId(userId) },
+      { $set: { subscription: subscription } }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    console.log("✅ Subscription updated successfully in database");
+    res.json({ success: true, message: "Subscription updated successfully" });
+  } catch (error) {
+    console.error("❌ Error updating subscription:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
 
 connectDB()
-  .then(seedIfEmpty)
   .then(() => {
     app.listen(PORT, () => {
-      console.log(`NutriCart backend running on http://localhost:${PORT}`);
+      console.log(`NutriCart backend running on ${process.env.BACKEND_URL}`);
     });
   })
   .catch((err) => {
